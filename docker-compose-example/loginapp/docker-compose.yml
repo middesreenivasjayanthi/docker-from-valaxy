@@ -1,0 +1,49 @@
+version: '3.8'
+networks:
+  dpt4webnw:
+    driver: bridge
+services:
+    mysql:
+        build:
+          context: ./mysql
+          dockerfile: Dockerfile
+        container_name: mysql
+        restart: always
+        ports:
+          - "3306:3306"
+        environment:
+          - MYSQL_ROOT_PASSWORD=admin123
+          - MYSQL_DATABASE=UserDB
+          - MYSQL_USER=admin
+          - MYSQL_PASSWORD=admin123
+        volumes:
+          - /data:/var/lib/mysql
+        networks:
+          - dpt4webnw
+    nginx:
+        build:
+           context: ./nginx
+           dockerfile: Dockerfile
+        container_name: nginx
+        depends_on:
+          - app
+        ports:
+          - 80:80
+        networks:
+          - dpt4webnw
+        links:
+          - app
+    app:
+        build:
+          context: ./app
+          dockerfile: Dockerfile
+        container_name: app
+        depends_on:
+          - mysql
+        restart: always
+        ports:
+          - "8080:8080"
+        networks:
+          - dpt4webnw
+        links:
+          - mysql
